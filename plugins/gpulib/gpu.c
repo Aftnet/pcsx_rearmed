@@ -18,7 +18,11 @@
 #define preload __builtin_prefetch
 #define noinline __attribute__((noinline))
 #else
+#ifdef _MSC_VER
+#define unlikely
+#else
 #define unlikely(x)
+#endif
 #define preload(...)
 #define noinline
 #endif
@@ -385,44 +389,44 @@ static noinline int do_cmd_list_skip(uint32_t *data, int count, int *last_cmd)
     cmd = list[0] >> 24;
     len = 1 + cmd_lengths[cmd];
 
-    switch (cmd) {
-      case 0x02:
-        if ((list[2] & 0x3ff) > gpu.screen.w || ((list[2] >> 16) & 0x1ff) > gpu.screen.h)
-          // clearing something large, don't skip
-          do_cmd_list(list, 3, &dummy);
-        else
-          memcpy(gpu.frameskip.pending_fill, list, 3 * 4);
-        break;
-      case 0x24 ... 0x27:
-      case 0x2c ... 0x2f:
-      case 0x34 ... 0x37:
-      case 0x3c ... 0x3f:
-        gpu.ex_regs[1] &= ~0x1ff;
-        gpu.ex_regs[1] |= list[4 + ((cmd >> 4) & 1)] & 0x1ff;
-        break;
-      case 0x48 ... 0x4F:
-        for (v = 3; pos + v < count; v++)
-        {
-          if ((list[v] & 0xf000f000) == 0x50005000)
-            break;
-        }
-        len += v - 3;
-        break;
-      case 0x58 ... 0x5F:
-        for (v = 4; pos + v < count; v += 2)
-        {
-          if ((list[v] & 0xf000f000) == 0x50005000)
-            break;
-        }
-        len += v - 4;
-        break;
-      default:
-        if (cmd == 0xe3)
-          skip = decide_frameskip_allow(list[0]);
-        if ((cmd & 0xf8) == 0xe0)
-          gpu.ex_regs[cmd & 7] = list[0];
-        break;
-    }
+	if (cmd == 0x02)
+	{
+		if ((list[2] & 0x3ff) > gpu.screen.w || ((list[2] >> 16) & 0x1ff) > gpu.screen.h)
+			// clearing something large, don't skip
+			do_cmd_list(list, 3, &dummy);
+		else
+			memcpy(gpu.frameskip.pending_fill, list, 3 * 4);
+	}
+	if ((cmd >= 0x24 && cmd <= 0x27) || (cmd >= 0x2c && cmd <= 0x2f) || (cmd >= 0x34 && cmd <= 0x37) || (cmd >= 0x3c && cmd <= 0x3f))
+	{
+		gpu.ex_regs[1] &= ~0x1ff;
+		gpu.ex_regs[1] |= list[4 + ((cmd >> 4) & 1)] & 0x1ff;
+	}
+	if (cmd >= 0x48 && cmd <= 0x4F)
+	{
+		for (v = 3; pos + v < count; v++)
+		{
+			if ((list[v] & 0xf000f000) == 0x50005000)
+				break;
+		}
+		len += v - 3;
+	}
+	if (cmd >= 0x58 && cmd <= 0x5F)
+	{
+		for (v = 4; pos + v < count; v += 2)
+		{
+			if ((list[v] & 0xf000f000) == 0x50005000)
+				break;
+		}
+		len += v - 4;
+	}
+	else
+	{
+		if (cmd == 0xe3)
+			skip = decide_frameskip_allow(list[0]);
+		if ((cmd & 0xf8) == 0xe0)
+			gpu.ex_regs[cmd & 7] = list[0];
+	}
 
     if (pos + len > count) {
       cmd = -1;

@@ -9,7 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _MSC_VER
 #include <strings.h>
+#endif
 #ifdef __MACH__
 #include <unistd.h>
 #include <sys/syscall.h>
@@ -30,7 +32,6 @@
 #include "plugin.h"
 #include "plugin_lib.h"
 #include "arm_features.h"
-#include "revision.h"
 #include "libretro.h"
 
 #ifdef _3DS
@@ -1597,7 +1598,9 @@ static bool try_use_bios(const char *path)
 	return true;
 }
 
-#ifndef VITA
+#if defined(VITA) || defined(_MSC_VER)
+#define find_any_bios(...) false
+#else
 #include <sys/types.h>
 #include <dirent.h>
 
@@ -1623,8 +1626,6 @@ static bool find_any_bios(const char *dirpath, char *path, size_t path_size)
 	closedir(dir);
 	return ret;
 }
-#else
-#define find_any_bios(...) false
 #endif
 
 static void check_system_specs(void)
