@@ -8,7 +8,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 #include <signal.h>
 #include <time.h>
 #if !defined(_WIN32) && !defined(NO_DYLIB)
@@ -27,7 +29,9 @@
 #include "../plugins/cdrcimg/cdrcimg.h"
 #include "../plugins/dfsound/spu_config.h"
 #include "arm_features.h"
+#ifndef HAVE_LIBRETRO
 #include "revision.h"
+#endif
 
 #ifndef NO_FRONTEND
 #include "libpicofe/input.h"
@@ -426,7 +430,9 @@ int emu_core_preinit(void)
 
 int emu_core_init(void)
 {
+#ifndef  HAVE_LIBRETRO
 	SysPrintf("Starting PCSX-ReARMed " REV "\n");
+#endif
 
 #ifndef NO_FRONTEND
 	check_profile();
