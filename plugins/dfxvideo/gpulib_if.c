@@ -333,9 +333,7 @@ int do_cmd_list(uint32_t *list, int list_len, int *last_cmd)
 
     primTableJ[cmd]((void *)list);
 
-    switch(cmd)
-    {
-      case 0x48 ... 0x4F:
+      if (cmd >= 0x48 && cmd <= 0x4F)
       {
         u32 num_vertexes = 2;
         u32 *list_position = &(list[3]);
@@ -358,7 +356,7 @@ int do_cmd_list(uint32_t *list, int list_len, int *last_cmd)
         break;
       }
 
-      case 0x58 ... 0x5F:
+      if(cmd >= 0x58 && cmd <= 0x5F)
       {
         u32 num_vertexes = 2;
         u32 *list_position = &(list[4]);
@@ -382,7 +380,7 @@ int do_cmd_list(uint32_t *list, int list_len, int *last_cmd)
       }
 
 #ifdef TEST
-      case 0xA0:          //  sys -> vid
+      if(cmd == 0xA0)          //  sys -> vid
       {
         short *slist = (void *)list;
         u32 load_width = slist[4];
@@ -393,7 +391,6 @@ int do_cmd_list(uint32_t *list, int list_len, int *last_cmd)
         break;
       }
 #endif
-    }
   }
 
 breakloop:
