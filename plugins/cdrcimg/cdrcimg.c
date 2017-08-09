@@ -402,12 +402,22 @@ static long CDRopen(void)
 		struct {
 			unsigned int offset;
 			unsigned short size;
-		} __attribute__((packed)) ztab_entry;
+		}
+#ifndef _MSC_VER
+		__attribute__((packed)) ztab_entry;
+#else
+		ztab_entry;
+#endif
 		struct {
 			unsigned int offset;
 			unsigned short size;
 			unsigned int dontcare;
-		} __attribute__((packed)) znxtab_entry;
+		}
+#ifndef _MSC_VER
+		__attribute__((packed)) znxtab_entry;
+#else
+		znxtab_entry;
+#endif
 		unsigned int bztab_entry;
 	} u;
 	int tabentry_size;
